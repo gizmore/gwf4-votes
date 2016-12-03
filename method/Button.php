@@ -12,7 +12,7 @@ final class Votes_Button extends GWF_Method
 	
 	public function execute()
 	{
-		GWF3::setConfig('store_last_url', false);
+		GWF4::setConfig('store_last_url', false);
 		
 		if (false !== ($error = $this->sanitize()))
 		{
@@ -67,4 +67,3 @@ final class Votes_Button extends GWF_Method
 		return GWF_Color::interpolateBound($image, 1, $this->of, $this->num, $mincolor, $maxcolor); #, $max, $value)
 	}
 }
-?>

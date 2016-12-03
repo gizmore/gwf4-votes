@@ -2,13 +2,15 @@
 /**
  * Multi Purpose Voting Module.
  * @author gizmore
+ * @license MIT
  */
 final class Module_Votes extends GWF_Module
 {
 	##################
 	### GWF_Module ###
 	##################
-	public function getVersion() { return 1.00; }
+	public function getVersion() { return 4.00; }
+	public function getDefaultAutoLoad() { return true; }
 	public function getDefaultPriority() { return GWF_Module::DEFAULT_PRIORITY - 10; } # we might have deps
 	public function onLoadLanguage() { return $this->loadLanguage('lang/voting'); }
 	public function getAdminSectionURL() { return $this->getMethodURL('Staff'); }
@@ -41,6 +43,18 @@ final class Module_Votes extends GWF_Module
 	public function cfgMaxOptionLen() { return $this->getModuleVarInt('vote_option_max', 255); }
 	public function cfgPollLevel() { $this->getModuleVarInt('vote_poll_level', 0); }
 	public function cfgPollGroup() { $this->getModuleVar('vote_poll_group', 'moderator'); }
+
+	###############
+	### Startup ###
+	###############
+	public function onStartup()
+	{
+		if (GWF_Session::hasSession())
+		{
+			$this->addJavascript('gwf-votes.js');
+		}
+	}
+	
 	
 	############
 	### HREF ###
@@ -225,6 +239,4 @@ final class Module_Votes extends GWF_Module
 		
 		return '';
 	}
-	
 }
-?>
