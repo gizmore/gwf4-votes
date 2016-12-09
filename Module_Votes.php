@@ -9,12 +9,12 @@ final class Module_Votes extends GWF_Module
 	##################
 	### GWF_Module ###
 	##################
-	public function getVersion() { return 4.00; }
+	public function getVersion() { return 4.01; }
 	public function getDefaultAutoLoad() { return true; }
 	public function getDefaultPriority() { return GWF_Module::DEFAULT_PRIORITY - 10; } # we might have deps
 	public function onLoadLanguage() { return $this->loadLanguage('lang/voting'); }
 	public function getAdminSectionURL() { return $this->getMethodURL('Staff'); }
-	public function getClasses() { return array('GWF_VoteMulti', 'GWF_VoteMultiOpt', 'GWF_VoteMultiRow', 'GWF_VoteScore', 'GWF_VoteScoreRow'); }
+	public function getClasses() { return array('GWF_VoteMulti', 'GWF_VoteMultiOpt', 'GWF_VoteMultiRow', 'GWF_VoteScore', 'GWF_VoteScoreRow', 'GWF_VoteLike', 'GWF_VoteLikeRow'); }
 	public function onIncludeAjax() { GWF_Website::addJavascript(GWF_WEB_ROOT.'js/module/Votes/gwf_vote.js'); }
 	public function onMerge(GDO_Database $db_from, GDO_Database $db_to, array &$db_offsets, $prefix, $prevar) { require_once 'Merge_Votes.php'; return Merge_Votes::onMerge($db_from, $db_to, $db_offsets, $prefix, $prevar); }
 	public function onInstall($dropTable)
@@ -239,4 +239,30 @@ final class Module_Votes extends GWF_Module
 		
 		return '';
 	}
+	
+	################
+	### Like API ###
+	################
+	public static function installVoteLikeTable($name, $allowGuests=true, $expires=null, $results=GWF_VoteLike::SHOW_RESULT_ALWAYS, $enabled=true)
+	{
+		$options = 0;
+		$options |= $enabled ? GWF_VoteLike::ENABLED : 0;
+		$options |= $allowGuests ? GWF_VoteLike::GUEST_VOTES : 0;
+		$options |= $results;
+
+		if (!($likes = GWF_VoteLike::newVoteLike($name, $expires, $options)))
+		{
+			echo GWF_HTML::err('ERR_DATABASE', array( __FILE__, __LINE__));
+			return false;
+		}
+		
+		if (!$likes->replace())
+		{
+			echo GWF_HTML::err('ERR_DATABASE', array( __FILE__, __LINE__));
+			return false;
+		}
+		
+		return $likes;
+	}
+	
 }
