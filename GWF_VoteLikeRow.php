@@ -54,11 +54,11 @@ final class GWF_VoteLikeRow extends GDO
 		return self::table(__CLASS__)->selectFirstObject('*', "vlr_vlid=$vlid AND vlr_ip='$ip'");
 	}
 	
-// 	####################
-// 	### Guest Expire ###
-// 	####################
-// 	public function isGuestVoteExpired($time)
-// 	{
-// 		return $this->getVar('vsr_time') < (time() - $time);
-// 	}
+	####################
+	### Guest Expire ###
+	####################
+	public function isGuestVoteExpired($time)
+	{
+		return $this->getVar('vsr_time') < (time() - $time);
+	}
 }
