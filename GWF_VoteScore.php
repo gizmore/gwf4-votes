@@ -296,7 +296,7 @@ final class GWF_VoteScore extends GDO #implements GDO_Sortable, GDO_Editable
 		
 		$vsid = $this->getID();
 //		$ip = (int) $ip;
-		if ($ip === 0) {
+		if ($ip === null) {
 			$userid = (int) $userid;
 			return $row->deleteWhere("vsr_vsid=$vsid AND vsr_uid=$userid");
 		} else {
@@ -353,36 +353,41 @@ final class GWF_VoteScore extends GDO #implements GDO_Sortable, GDO_Editable
 	 * @param int $userid
 	 * @return error msg or false
 	 */
-	public function onUserVoteSafe($score, $userid)
+	public function onUserVoteSafe($score, $userid, $checkIP=true)
 	{
 		$userid = (int)$userid;
 		$vsid = $this->getID();
 		
+		$ip = $checkIP ? GWF_IP6::getIP(GWF_IP_QUICK, $checkIP) : null;
+		
 		# Revert Guest Vote with same IP
-		$ip = GWF_IP6::getIP(GWF_IP_QUICK);
-//		var_dump($ip);
-		if (false !== ($vsr = GWF_VoteScoreRow::getByIP($vsid, $ip)))
+		if ($checkIP)
 		{
-//			echo '<div>HAVE GUEST VOTE</div>';
-//			var_dump($vsr);
-			if (!$vsr->isGuestVoteExpired(GWF_Module::getModule('Votes')->cfgGuestTimeout())) {
-				if (false === $this->revertVote($vsr, $ip, 0)) {
-					return GWF_HTML::err('ERR_DATABASE', array( __FILE__, __LINE__));
+			if ($vsr = GWF_VoteScoreRow::getByIP($vsid, $ip))
+			{
+				GWF_Log::logWebsocket('got vsr by ip :O');
+				if (!$vsr->isGuestVoteExpired(GWF_Module::getModule('Votes')->cfgGuestTimeout()))
+				{
+					if (!$this->revertVote($vsr, $ip, null))
+					{
+						return GWF_HTML::err('ERR_DATABASE', array( __FILE__, __LINE__));
+					}
 				}
 			}
 		}
 
 		# Revert Users Vote
-		if (false !== ($vsr = GWF_VoteScoreRow::getByUID($vsid, $userid)))
+		if ($vsr = GWF_VoteScoreRow::getByUID($vsid, $userid))
 		{
-//			echo '<div>HAVE OLD VOTE</div>';
-			if (false === $this->revertVote($vsr, 0, $userid)) {
+			if (!$this->revertVote($vsr, null, $userid))
+			{
 				return GWF_HTML::err('ERR_DATABASE', array( __FILE__, __LINE__));
 			}
 		}
 
 		# And Vote it
-		if (false === $this->onUserVote($score, $userid, 0)) {
+		if (false === $this->onUserVote($score, $userid, $ip))
+		{
 			return GWF_HTML::err('ERR_DATABASE', array( __FILE__, __LINE__));
 		}
 		
